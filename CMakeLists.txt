@@ -8,7 +8,7 @@ set(VCPKG_MANIFEST_FEATURES ON)
 ########################################################################################################################
 project(
         DeviousDevices
-        VERSION 3.0.0.1
+        VERSION 3.0.0.2
         DESCRIPTION "NG Implementation of Devious Devices"
         LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
@@ -85,7 +85,18 @@ message("\tTests: ${BUILD_TESTS}")
 ########################################################################################################################
 ## Configure target DLL
 ########################################################################################################################
-find_package(CommonLibSSE CONFIG REQUIRED)
+# CommonLibSSE-NG v7.5.1 adds Skyrim 1.7.x detection, Address Library
+# format-5 support, and the SKSE 2.3.1 compatibility declaration.  Keep it
+# pinned as a submodule so a registry cannot silently select the old 3.7.0
+# package that produced the 1.7.104 startup error.
+set(SKSE_SUPPORT_XBYAK ON CACHE BOOL "" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+include(FetchContent)
+FetchContent_Declare(
+        CommonLibSSE_NG
+        GIT_REPOSITORY https://github.com/alandtse/CommonLibVR.git
+        GIT_TAG bedcb1e05418baba7b316a650b6180c2dd6007a8)
+FetchContent_MakeAvailable(CommonLibSSE_NG)
 find_library(Detours_LIBRARIES NAMES detours.lib)
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${headers} ${sources})
@@ -117,7 +128,6 @@ install(TARGETS ${PROJECT_NAME}
         DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 
-set(SKSE_USE_XBYAK ON)
 ########################################################################################################################
 ## Configure unit tests
 ########################################################################################################################
